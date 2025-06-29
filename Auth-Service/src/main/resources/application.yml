@@ -1,0 +1,48 @@
+# src/main/resources/application.yml
+# Configuración principal de la aplicación.
+# Las configuraciones de Spring Cloud Config y Eureka Client han sido movidas a bootstrap.yml.
+
+spring:
+  profiles:
+    active: dev # Perfil activo por defecto
+  datasource:
+    url: jdbc:mysql://localhost:3306/medical_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD:dev_db_password} # Valor por defecto si DB_PASSWORD no está definido
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    open-in-view: false
+  security:
+    user:
+      name: auth-admin
+      password: ${SPRING_SECURITY_PASSWORD:dev_spring_security_password} # Valor por defecto
+  # YA NO VA spring.cloud.config ni spring.cloud.discovery aquí
+  # YA NO VA eureka.client ni eureka.instance aquí
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:YOUR_GENERATED_DEV_JWT_SECRET_BASE64} # Valor por defecto
+    expiration-ms: 86400000
+    refresh-expiration-ms: 2592000000
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.luminia.Auth_Service: DEBUG # Ajustado a tu paquete
+    org.springframework.cloud.config: DEBUG

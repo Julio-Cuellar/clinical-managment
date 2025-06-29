@@ -1,0 +1,24 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Julio-Cuellar/clinical-managment.git
+          default-label: main
+          search-paths:
+            - config
+            - .
+          clone-on-start: true
+          username: ${GIT_USER}
+          password: ${GIT_PASSWORD}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,refresh
