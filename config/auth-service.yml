@@ -1,0 +1,45 @@
+# config/auth-service.yml
+# Propiedades por defecto para el microservicio 'auth-service'.
+# Los valores sensibles se obtendrán de variables de entorno del Config Server.
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/medical_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    # Contraseña de la base de datos.
+    # ESTE PLACEHOLDER SERÁ RESUELTO POR EL CONFIG SERVER DESDE SU PROPIA VARIABLE DE ENTORNO.
+    # Ejemplo: En el entorno donde corra el Config Server, deberías tener: export DB_PASSWORD=your_prod_db_password
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # Útil para desarrollo. Para producción, 'none' o 'validate'.
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    open-in-view: false
+  security:
+    user:
+      name: auth-admin
+      # Contraseña para el usuario de seguridad de Spring.
+      # ESTE PLACEHOLDER SERÁ RESUELTO POR EL CONFIG SERVER DESDE SU PROPIA VARIABLE DE ENTORNO.
+      # Ejemplo: En el entorno donde corra el Config Server, deberías tener: export SPRING_SECURITY_PASSWORD=your_prod_spring_security_password
+      password: ${SPRING_SECURITY_PASSWORD}
+
+# Propiedades específicas de la aplicación (JWT)
+app:
+  jwt:
+    # CLAVE SECRETA DE JWT.
+    # ESTE PLACEHOLDER SERÁ RESUELTO POR EL CONFIG SERVER DESDE SU PROPIA VARIABLE DE ENTORNO.
+    # Ejemplo: En el entorno donde corra el Config Server, deberías tener: export JWT_SECRET=your_prod_jwt_secret_base64
+    secret: ${JWT_SECRET}
+    expiration-ms: 86400000        # 24 horas en milisegundos (para tokens normales)
+    refresh-expiration-ms: 2592000000 # 30 días en milisegundos (para tokens de refresco)
+
+logging:
+  level:
+    org.springframework.security: INFO
+    com.luminia.Auth_Service: INFO
+    org.springframework.cloud.config: INFO

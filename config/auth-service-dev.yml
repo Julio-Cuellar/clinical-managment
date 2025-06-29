@@ -1,0 +1,32 @@
+# config/auth-service-dev.yml
+# Propiedades para el microservicio 'auth-service' cuando el perfil 'dev' está activo.
+# Los valores sensibles se obtendrán de variables de entorno del Config Server,
+# que pueden ser específicas para el ambiente de desarrollo.
+
+spring:
+  datasource:
+    # Puedes usar una URL de base de datos de desarrollo diferente si lo necesitas
+    # url: jdbc:mysql://localhost:3306/medical_auth_dev?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    # Contraseña de la base de datos específica para desarrollo.
+    # El Config Server buscará la variable de entorno DB_PASSWORD_DEV o DB_PASSWORD
+    # en su entorno. Es común reutilizar la misma variable DB_PASSWORD y que el
+    # entorno de ejecución del Config Server defina el valor correcto para 'dev'.
+    password: ${DB_PASSWORD} # Asume que DB_PASSWORD contendrá el valor de desarrollo en el entorno DEV del Config Server.
+  security:
+    user:
+      # Contraseña para el usuario de seguridad de Spring específica para desarrollo.
+      password: ${SPRING_SECURITY_PASSWORD} # Asume que SPRING_SECURITY_PASSWORD contendrá el valor de desarrollo.
+
+app:
+  jwt:
+    # CLAVE SECRETA DE JWT ESPECÍFICA PARA EL PERFIL 'DEV'.
+    # Asume que JWT_SECRET contendrá el valor de desarrollo.
+    secret: ${JWT_SECRET}
+    expiration-ms: 3600000        # 1 hora (más corto para pruebas en desarrollo)
+    refresh-expiration-ms: 604800000 # 7 días (más corto para desarrollo)
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.luminia.Auth_Service: DEBUG
+    org.springframework.cloud.config: DEBUG
