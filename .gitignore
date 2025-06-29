@@ -1,0 +1,84 @@
+# Archivos de la Papelera de Reciclaje de Windows
+Thumbs.db
+Desktop.ini
+
+# Archivos de macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Archivos y directorios generados por Maven
+target/
+pom.xml.tag
+pom.xml.next
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.stacktrace
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/wrapper/maven-wrapper.jar
+!/.mvn/wrapper/maven-wrapper.properties # Mantener este archivo para el wrapper de Maven
+!/.mvn/wrapper/MavenWrapperDownloader.java # Mantener este archivo para el wrapper de Maven
+.repository/ # Caché de Maven si se usa para algo específico
+
+# Archivos de Spring Boot
+*.log
+*.zip
+*.tar.gz
+*.war
+*.jar
+*.orig
+*.bak
+
+# Archivos y directorios generados por IDEs (IntelliJ IDEA, VS Code, Eclipse)
+.idea/                          # Directorios de configuración de IntelliJ IDEA
+*.iml                           # Archivos de módulo de IntelliJ IDEA
+*.ipr                           # Archivos de proyecto de IntelliJ IDEA
+*.iws                           # Archivos de workspace de IntelliJ IDEA
+.vscode/                        # Directorios de configuración de VS Code
+.classpath                      # Archivos de classpath de Eclipse
+.project                        # Archivos de proyecto de Eclipse
+.settings/                      # Directorios de configuración de Eclipse
+.metadata                       # Directorios de metadatos de Eclipse
+
+# Archivos generados por el compilador Java
+*.class                         # Archivos de clase compilados
+*.jar.original
+
+# Logs
+logs/
+*.log
+*.log.*
+*.trace
+
+# Archivos de configuración sensibles/locales (¡NO deben subirse al Git!)
+# Si tienes archivos de configuración específicos para tu entorno local que contienen
+# credenciales o información sensible, ignóralos aquí.
+# Ejemplo:
+# src/main/resources/application-local.yml
+# src/main/resources/application-local.properties
+# .env # Archivos de entorno (dotenv)
+
+# Archivos de base de datos local (ej. H2 si lo usas en dev, SQLite, etc.)
+*.mv.db
+*.trace.db
+
+# Directorios de compilación y empaquetado para Gradle (aunque uses Maven, buena práctica)
+build/
+.gradle/
+*.gradle.properties
+
+# Archivos de dependencias del IDE
+.idea_modules/
+
+# Archivos de caché
+.spring_boot_libs/
+.config/
+.cache/
+
+# Archivos generados por cobertura de código
+jacoco/
+
+# Archivos de herramientas de análisis estático
+.sonar/
