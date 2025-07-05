@@ -1,53 +1,61 @@
 package com.luminia.Auth_Service.config;
 
+
+import com.luminia.Auth_Service.service.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/**
- * Clase de configuración principal para Spring Security.
- * Define las reglas de seguridad, la gestión de sesiones y la integración del filtro JWT.
- */
+import java.util.List;
+
 @Configuration
-@EnableWebSecurity // Habilita el soporte de seguridad web de Spring Security
-@RequiredArgsConstructor // Genera un constructor con los campos final inyectados
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter; // Nuestro filtro JWT personalizado
-    private final AuthenticationProvider authenticationProvider; // El proveedor de autenticación definido en ApplicationConfig
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    /**
-     * Configura la cadena de filtros de seguridad HTTP.
-     * @param http El objeto HttpSecurity para configurar la seguridad.
-     * @return La SecurityFilterChain configurada.
-     * @throws Exception Si ocurre un error durante la configuración.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Deshabilita CSRF ya que JWT maneja la autenticación sin estado (stateless)
-                .authorizeHttpRequests(authorize -> authorize
-                        // Endpoints públicos: permite el acceso a todos sin autenticación
-                        // Esto es crucial para los endpoints de registro y login.
-                        .requestMatchers("/api/auth/**").permitAll() // Ejemplo: /api/auth/register, /api/auth/login
-                        // Cualquier otra solicitud requiere autenticación
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/auth/register",
+                                "/auth/login",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session
-                        // Configura la gestión de sesiones para que sea sin estado (STATELESS)
-                        // Esto es fundamental para JWT, ya que cada solicitud se autentica con el token.
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authenticationProvider(authenticationProvider) // Establece el AuthenticationProvider personalizado
-                // Agrega nuestro filtro JWT personalizado antes del filtro de autenticación de usuario/contraseña estándar de Spring Security
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+        return http.build();
+    }
 
-        return http.build(); // Construye y retorna la cadena de filtros de seguridad
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("*")); // Cambia "*" por tus orígenes permitidos si lo necesitas
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(false); // true solo si usas cookies/JSESSIONID
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

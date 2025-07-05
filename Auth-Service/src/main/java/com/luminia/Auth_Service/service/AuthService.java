@@ -1,50 +1,75 @@
 package com.luminia.Auth_Service.service;
 
-import com.luminia.Auth_Service.entity.User;
-import com.luminia.Auth_Service.enums.Role;
+import com.luminia.Auth_Service.config.JwtUtil;
+import com.luminia.Auth_Service.dto.RegisterRequest;
+import com.luminia.Auth_Service.model.Clinic;
+import com.luminia.Auth_Service.model.Role;
+import com.luminia.Auth_Service.model.User;
+import com.luminia.Auth_Service.repository.ClinicRepository;
+import com.luminia.Auth_Service.repository.RoleRepository;
 import com.luminia.Auth_Service.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final ClinicRepository clinicRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    /**
-     * Registra un nuevo usuario en el sistema.
-     * Codifica la contraseña antes de guardarla.
-     * @param email El correo electrónico del usuario.
-     * @param password La contraseña en texto plano del usuario.
-     * @param role El rol del usuario.
-     * @return El objeto User guardado.
-     * @throws RuntimeException Si el correo electrónico ya está registrado.
-     */
-    public User register(String email, String password, Role role) {
-        if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("El correo ya está registrado");
+    @Transactional
+    public User registerNewUser(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("El correo electrónico ya está en uso");
         }
 
+        // Crear clínica
+        Clinic clinic = Clinic.builder().name(request.getClinicName()).build();
+        clinicRepository.save(clinic);
+
+        // Obtener rol ADMIN
+        Role adminRole = roleRepository.findByName("ADMIN")
+                .orElseThrow(() -> new RuntimeException("No existe el rol ADMIN en la base de datos"));
+
+        // Crear usuario
         User user = User.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password)) // Codifica la contraseña
-                .role(role)
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .clinic(clinic)
+                .roles(Set.of(adminRole))
+                .enabled(true)
                 .build();
 
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        // Asignar owner a la clínica
+        clinic.setOwner(user);
+        clinicRepository.save(clinic);
+
+        return user;
     }
 
-    /**
-     * Busca un usuario por su dirección de correo electrónico.
-     * @param email La dirección de correo electrónico a buscar.
-     * @return Un Optional que contiene el usuario si se encuentra, o vacío si no.
-     */
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public String login(String username, String password) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario o contraseña incorrectos"));
+
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new RuntimeException("Usuario o contraseña incorrectos");
+        }
+
+        Set<String> roleNames = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        return jwtUtil.generateToken(user.getUsername(), roleNames);
     }
 }
