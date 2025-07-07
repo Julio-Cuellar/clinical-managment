@@ -1,0 +1,53 @@
+spring:
+  config:
+    import: configserver:http://localhost:8888 # Asumiendo que también usarás Spring Cloud Config
+  application:
+    name: user-service # Nombre del microservicio
+  profiles:
+    active: dev # Perfil activo, puedes cambiar a 'prod' o lo que necesites
+  datasource:
+    url: jdbc:mysql://localhost:3306/medical_users?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD} # Variable de entorno para la contraseña de la DB del UserService
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # Cuidado con 'update' en producción, considera 'validate' o 'none'
+    show-sql: true # Muestra las sentencias SQL generadas en la consola
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect # Dialecto de Hibernate para MySQL 8
+        format_sql: true # Formatea el SQL para una mejor legibilidad
+    open-in-view: false # Deshabilita el patrón Open-in-View para evitar problemas de N+1 queries en REST APIs
+  cloud:
+    config:
+      enabled: true # Habilita la integración con Spring Cloud Config
+      uri: http://localhost:8888 # URL de tu Spring Cloud Config Server
+      fail-fast: true # Si el Config Server no está disponible, la aplicación falla al iniciar
+    discovery:
+      enabled: true # Habilita el descubrimiento de servicios para Eureka
+
+server:
+  port: 8082 # Puerto para el UserService. Asegúrate de que sea diferente al AuthService (8081)
+
+management: # Configuración para Spring Boot Actuator
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh # Expone los endpoints de salud, información y refresh
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # URL de tu Eureka Server
+    register-with-eureka: true # Este servicio se registrará con Eureka
+    fetch-registry: true # Este servicio obtendrá el registro de otros servicios desde Eureka
+  instance:
+    prefer-ip-address: true # Prefiere usar la dirección IP en lugar del hostname para el registro en Eureka
+    instance-id: "${spring.application.name}:${random.value}" # ID único de la instancia en Eureka
+
+logging:
+  level:
+    com.yourcompany.userservice: DEBUG # Ajusta al paquete base de tu UserService para ver logs detallados
+    org.springframework.cloud.config: DEBUG # Para ver logs relacionados con Spring Cloud Config
+    org.springframework.cloud.openfeign: DEBUG # Para ver logs de las llamadas de Feign Client

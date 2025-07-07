@@ -5,13 +5,11 @@ import com.luminia.Auth_Service.dto.LoginResponse;
 import com.luminia.Auth_Service.dto.RegisterRequest;
 import com.luminia.Auth_Service.model.User;
 import com.luminia.Auth_Service.repository.UserRepository;
+import com.luminia.Auth_Service.security.TokenBlacklistService;
 import com.luminia.Auth_Service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
     private final UserRepository userRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
 
     @PostMapping("/login")
@@ -45,6 +44,18 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenBlacklistService.blacklist(token);
+            return ResponseEntity.ok("Logout exitoso. Token invalidado.");
+        }
+        return ResponseEntity.badRequest().body("Authorization header inválido");
+    }
+
+
 }
 
 

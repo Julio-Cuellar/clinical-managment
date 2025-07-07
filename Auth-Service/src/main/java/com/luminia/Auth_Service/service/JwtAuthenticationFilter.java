@@ -1,7 +1,7 @@
 package com.luminia.Auth_Service.service;
 
-
 import com.luminia.Auth_Service.config.JwtUtil;
+import com.luminia.Auth_Service.security.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,9 +19,18 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, TokenBlacklistService tokenBlacklistService) {
         this.jwtUtil = jwtUtil;
+        this.tokenBlacklistService = tokenBlacklistService;
+    }
+
+    // Este método evita que el filtro se aplique a endpoints públicos como login y register
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.equals("/auth/login") || path.equals("/auth/register");
     }
 
     @Override
@@ -36,6 +45,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);
+
+            // Verifica si el token está en la blacklist (logout realizado)
+            if (tokenBlacklistService.isBlacklisted(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token invalidado (logout realizado)");
+                return;
+            }
+
             if (jwtUtil.validateJwt(token)) {
                 username = jwtUtil.getUsernameFromJwt(token);
             }
@@ -44,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             List<String> roles = jwtUtil.getRolesFromJwt(token);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    username, null, List.of() // Aquí puedes mapear roles a authorities si lo deseas
+                    username, null, List.of() // Puedes mapear roles a authorities si lo deseas
             );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
