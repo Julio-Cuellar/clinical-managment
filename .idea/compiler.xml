@@ -37,8 +37,8 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="patient-service" />
-        <module name="user-service" />
         <module name="inventory-service" />
+        <module name="user-service" />
         <module name="appointment-service" />
         <module name="doctor-service" />
       </profile>
