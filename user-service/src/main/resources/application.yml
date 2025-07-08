@@ -1,0 +1,63 @@
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888
+  application:
+    name: user-service
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/medical_users?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    open-in-view: false
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8888
+      fail-fast: false
+    discovery:
+      enabled: true
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: "${spring.application.name}:${random.value}"
+
+# Auth service integration
+auth:
+  service:
+    url: http://localhost:8081
+    
+# JWT configuration for validating tokens from Auth Service
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: 86400000
+
+logging:
+  level:
+    com.luminia.clinical.userservice: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.cloud.config: DEBUG
