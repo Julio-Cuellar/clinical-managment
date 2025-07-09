@@ -10,6 +10,7 @@ import com.luminia.Auth_Service.repository.RoleRepository;
 import com.luminia.Auth_Service.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -27,6 +29,8 @@ public class AuthService {
 
     @Transactional
     public User registerNewUser(RegisterRequest request) {
+        log.info("Starting user registration for username: {}", request.getUsername());
+        
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }
@@ -35,14 +39,19 @@ public class AuthService {
         }
 
         // Crear clínica
+        log.info("Creating clinic: {}", request.getClinicName());
         Clinic clinic = Clinic.builder().name(request.getClinicName()).build();
         clinicRepository.save(clinic);
+        log.info("Clinic created with ID: {}", clinic.getId());
 
         // Obtener rol ADMIN
+        log.info("Fetching ADMIN role from database");
         Role adminRole = roleRepository.findByName("ADMIN")
                 .orElseThrow(() -> new RuntimeException("No existe el rol ADMIN en la base de datos"));
+        log.info("ADMIN role found with ID: {}, Name: {}", adminRole.getId(), adminRole.getName());
 
         // Crear usuario
+        log.info("Creating user with ADMIN role");
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -52,13 +61,28 @@ public class AuthService {
                 .enabled(true)
                 .build();
 
-        userRepository.save(user);
+        log.info("User object created. Roles assigned: {}", 
+                user.getRoles() != null ? user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()) : "NULL");
+
+        User savedUser = userRepository.save(user);
+        log.info("User saved with ID: {}", savedUser.getId());
+        
+        // Verificar roles después del guardado
+        User userFromDb = userRepository.findById(savedUser.getId()).orElse(null);
+        if (userFromDb != null && userFromDb.getRoles() != null) {
+            log.info("User roles after save: {}", 
+                    userFromDb.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
+        } else {
+            log.warn("User roles are NULL after save - this indicates the persistence issue!");
+        }
 
         // Asignar owner a la clínica
-        clinic.setOwner(user);
+        log.info("Assigning user as clinic owner");
+        clinic.setOwner(savedUser);
         clinicRepository.save(clinic);
+        log.info("User registration completed successfully");
 
-        return user;
+        return savedUser;
     }
 
     public String login(String username, String password) {
