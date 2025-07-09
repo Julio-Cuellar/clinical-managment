@@ -2,6 +2,7 @@ package com.luminia.Auth_Service.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -25,6 +26,7 @@ public class User {
     @Column(name = "password", nullable = false)
     private String passwordHash;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean enabled = true;
 
@@ -33,12 +35,13 @@ public class User {
     @JoinColumn(name = "clinic_id")
     private Clinic clinic;
 
-    // Relación con roles
-    @ManyToMany(fetch = FetchType.EAGER)
+    // Relación con roles - Add cascade to ensure relationship persistence
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles;
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
 }
