@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,7 @@ public class AuthService {
         // Crear clínica
         log.info("Creating clinic: {}", request.getClinicName());
         Clinic clinic = Clinic.builder().name(request.getClinicName()).build();
-        clinicRepository.save(clinic);
+        clinic = clinicRepository.save(clinic);
         log.info("Clinic created with ID: {}", clinic.getId());
 
         // Obtener rol ADMIN
@@ -50,20 +51,26 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("No existe el rol ADMIN en la base de datos"));
         log.info("ADMIN role found with ID: {}, Name: {}", adminRole.getId(), adminRole.getName());
 
-        // Crear usuario
+        // Crear usuario con roles inicializados correctamente
         log.info("Creating user with ADMIN role");
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .clinic(clinic)
-                .roles(Set.of(adminRole))
                 .enabled(true)
                 .build();
 
+        // Explicitly initialize and add roles to ensure proper persistence
+        if (user.getRoles() == null) {
+            user.setRoles(new HashSet<>());
+        }
+        user.getRoles().add(adminRole);
+        
         log.info("User object created. Roles assigned: {}", 
                 user.getRoles() != null ? user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()) : "NULL");
 
+        // Save user with roles
         User savedUser = userRepository.save(user);
         log.info("User saved with ID: {}", savedUser.getId());
         
