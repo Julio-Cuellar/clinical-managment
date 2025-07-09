@@ -93,6 +93,7 @@ public class AuthService {
     }
 
     public String login(String username, String password) {
+        log.info("Login attempt for username: {}", username);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario o contraseña incorrectos"));
 
@@ -101,6 +102,29 @@ public class AuthService {
         }
 
         Set<String> roleNames = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        log.info("User {} logged in successfully with roles: {}", username, roleNames);
         return jwtUtil.generateToken(user.getUsername(), roleNames);
+    }
+
+    /**
+     * Helper method to verify user role assignments for debugging purposes
+     */
+    public void verifyUserRoles(String username) {
+        log.info("Verifying roles for user: {}", username);
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            log.warn("User {} not found", username);
+            return;
+        }
+
+        log.info("User {} has {} roles assigned", username, 
+                user.getRoles() != null ? user.getRoles().size() : 0);
+        
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            Set<String> roleNames = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+            log.info("Roles for user {}: {}", username, roleNames);
+        } else {
+            log.warn("No roles found for user {} - this indicates a problem with role assignment!", username);
+        }
     }
 }
