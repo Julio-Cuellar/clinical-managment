@@ -9,6 +9,9 @@
         <option value="$PROJECT_DIR$/consultorio-service/pom.xml" />
         <option value="$PROJECT_DIR$/expediente-service/pom.xml" />
         <option value="$PROJECT_DIR$/finance-service/pom.xml" />
+        <option value="$PROJECT_DIR$/config-server/pom.xml" />
+        <option value="$PROJECT_DIR$/auth-service/pom.xml" />
+        <option value="$PROJECT_DIR$/discovery-server/pom.xml" />
       </list>
     </option>
   </component>
