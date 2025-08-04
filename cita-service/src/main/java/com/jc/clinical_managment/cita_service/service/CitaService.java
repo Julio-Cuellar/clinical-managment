@@ -17,6 +17,7 @@ public interface CitaService {
     // Métodos adicionales
     List<CitaResponseDTO> listarCitasPorPacienteId(Long pacienteId);
     List<CitaResponseDTO> listarCitasPorAgendaId(Long agendaId);
+    List<CitaResponseDTO> listarCitasPorDoctorId(Long doctorId);
     List<CitaResponseDTO> listarCitasPorFecha(Date fecha);
     List<CitaResponseDTO> listarCitasPorStatus(String status);
     List<CitaResponseDTO> listarCitasPorRangoFechas(Date fechaInicio, Date fechaFin);

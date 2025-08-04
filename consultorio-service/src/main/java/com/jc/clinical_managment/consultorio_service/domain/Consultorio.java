@@ -1,12 +1,20 @@
 package com.jc.clinical_managment.consultorio_service.domain;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.Set;
 
-
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "consultorios")
 public class Consultorio {
 
     @Id
@@ -19,7 +27,11 @@ public class Consultorio {
 
     private String address;
 
-    private Set<Long> agendaId;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "consultorio_agendas", joinColumns = @JoinColumn(name = "consultorio_id"))
+    @Column(name = "agenda_id")
+    @Builder.Default
+    private Set<Long> agendaIds = new HashSet<>();
 
     private Long almacenId;
 
@@ -27,5 +39,5 @@ public class Consultorio {
 
     private Long ticketsId;
 
-
+    private boolean activo = true;
 }

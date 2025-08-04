@@ -97,6 +97,11 @@ public class CitaServiceImpl implements CitaService {
     }
 
     @Override
+    public List<CitaResponseDTO> listarCitasPorDoctorId(Long doctorId) {
+        return citaRepository.findByIdUsuario(doctorId).stream().map(this::toResponseDTO).collect(Collectors.toList());
+    }
+
+    @Override
     public List<CitaResponseDTO> listarCitasPorFecha(Date fecha) {
         return citaRepository.findByFechaCita(fecha).stream().map(this::toResponseDTO).collect(Collectors.toList());
     }
