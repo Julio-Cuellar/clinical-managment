@@ -6,14 +6,16 @@ import com.jc.clinical_managment.auth_service.dto.UserDTO;
 import com.jc.clinical_managment.auth_service.dto.LoginRequest;
 import com.jc.clinical_managment.auth_service.dto.LoginResponse;
 import com.jc.clinical_managment.auth_service.repository.UserRepository;
-import com.jc.clinical_managment.auth_service.security.JwtService;
+import com.jc.clinical_managment.common.security.jwt.RS256JwtService;
 import com.jc.clinical_managment.auth_service.security.TokenBlacklist;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.authentication.BadCredentialsException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +24,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final RS256JwtService jwtService;
     private final TokenBlacklist tokenBlacklist;
 
     // ---------- CREATE ----------
@@ -126,7 +128,18 @@ public class AuthService {
         user.setEnabled(true);
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user);
+        // Create enhanced JWT with additional claims
+        Map<String, Object> additionalClaims = new HashMap<>();
+        additionalClaims.put("consultorioIds", user.getConsultorioIds());
+        additionalClaims.put("enabled", user.isEnabled());
+        
+        String token = jwtService.generateToken(
+            user.getUsername(),
+            user.getId().toString(), 
+            user.getRole().name(),
+            "auth-service",
+            additionalClaims
+        );
         return new LoginResponse(token, toDto(user));
     }
 
