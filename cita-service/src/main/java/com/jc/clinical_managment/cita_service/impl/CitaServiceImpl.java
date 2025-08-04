@@ -5,6 +5,8 @@ import com.jc.clinical_managment.cita_service.dto.CitaRequestDTO;
 import com.jc.clinical_managment.cita_service.dto.CitaResponseDTO;
 import com.jc.clinical_managment.cita_service.repository.CitaRepository;
 import com.jc.clinical_managment.cita_service.service.CitaService;
+import com.jc.clinical_managment.cita_service.client.AgendaClient;
+import com.jc.clinical_managment.cita_service.dto.AgendaDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,9 @@ public class CitaServiceImpl implements CitaService {
 
     @Autowired
     private CitaRepository citaRepository;
+
+    @Autowired
+    private AgendaClient agendaClient;
 
     private Cita toEntity(CitaRequestDTO dto) {
         return Cita.builder()
@@ -50,6 +55,17 @@ public class CitaServiceImpl implements CitaService {
 
     @Override
     public CitaResponseDTO crearCita(CitaRequestDTO dto) {
+        // Validar existencia de agenda usando FeignClient
+        AgendaDTO agenda = null;
+        try {
+            agenda = agendaClient.obtenerAgendaPorId(dto.getAgendaId());
+        } catch (Exception e) {
+            throw new RuntimeException("La agenda especificada no existe", e);
+        }
+        if (agenda == null || agenda.getId() == null) {
+            throw new RuntimeException("La agenda especificada no existe");
+        }
+
         Cita cita = toEntity(dto);
         cita.setFechaCreacion(new Date());
         cita.setFechaActualizacion(new Date());
