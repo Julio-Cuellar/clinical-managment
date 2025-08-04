@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="config-server" />
+        <module name="security" />
         <module name="discovery-server" />
       </profile>
       <profile name="Annotation profile for finance-service" enabled="true">
@@ -18,18 +19,18 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="expediente-service" />
-        <module name="cita-service" />
         <module name="finance-service" />
-        <module name="agenda-service" />
         <module name="consultorio-service" />
       </profile>
-      <profile name="Annotation profile for auth-service" enabled="true">
+      <profile name="Annotation profile for agenda-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
+        <module name="cita-service" />
+        <module name="agenda-service" />
         <module name="auth-service" />
       </profile>
     </annotationProcessing>

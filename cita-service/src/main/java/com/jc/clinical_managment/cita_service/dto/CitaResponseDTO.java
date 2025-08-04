@@ -25,5 +25,4 @@ public class CitaResponseDTO {
     private Date fechaCreacion;
     private Date fechaActualizacion;
 
-    // Getters y setters
 }

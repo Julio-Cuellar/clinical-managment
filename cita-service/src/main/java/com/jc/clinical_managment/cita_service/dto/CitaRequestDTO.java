@@ -19,6 +19,5 @@ public class CitaRequestDTO {
     private double costoCita;
     private String notas;
 
-    // Getters y setters
-    // (puedes usar Lombok @Data si prefieres)
+
 }

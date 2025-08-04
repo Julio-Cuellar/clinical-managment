@@ -35,4 +35,18 @@ public class AgendaService {
     public void eliminarAgenda(Long id) {
         agendaRepository.deleteById(id);
     }
+
+    public Optional<Agenda> modificarAgenda(Long id, Agenda nuevaAgenda) {
+        return agendaRepository.findById(id).map(agendaExistente -> {
+            // Actualiza los campos según tu modelo Agenda
+            agendaExistente.setNombre(nuevaAgenda.getNombre());
+            agendaExistente.setDescripcion(nuevaAgenda.getDescripcion());
+            agendaExistente.setUsuarioId(nuevaAgenda.getUsuarioId());
+            // Agrega aquí otros campos que quieras actualizar
+
+            Agenda agendaActualizada = agendaRepository.save(agendaExistente);
+            return agendaActualizada;
+        });
+    }
+
 }
